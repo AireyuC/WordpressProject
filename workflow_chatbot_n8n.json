@@ -1,0 +1,80 @@
+{
+  "name": "Chatbot Ultra Fest (Groq)",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "e674a9eb-db57-4b77-802c-47ea0c159ec3",
+      "name": "On chat message received",
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1,
+      "position": [0, 0]
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "Eres el asistente virtual oficial del Ultra Fest Santa Cruz (fechas: 15 y 16 de Noviembre de 2026). El evento es en Ventura Arena. Eres muy amable, entusiasta y respondes siempre en español. Informas sobre los DJs invitados (Martin Garrix, Tiësto, David Guetta, Bizarrap) y guías al usuario para la venta de entradas. Sé breve y conciso en tus respuestas."
+        }
+      },
+      "id": "422e1ab5-df2b-4cd3-a3d2-d3b25f9b4c02",
+      "name": "AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1,
+      "position": [220, 0]
+    },
+    {
+      "parameters": {
+        "model": "llama3-8b-8192"
+      },
+      "id": "90d1f7c0-264a-4d7a-8b06-44a7f05566f1",
+      "name": "Groq Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [220, 240]
+    },
+    {
+      "parameters": {},
+      "id": "9e5c4a5c-7d72-4d08-8e6f-7e8c37d0c3ab",
+      "name": "Window Buffer Memory",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1,
+      "position": [360, 240]
+    }
+  ],
+  "connections": {
+    "On chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Window Buffer Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {},
+  "pinData": {}
+}
