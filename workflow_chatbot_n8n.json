@@ -2,44 +2,70 @@
   "name": "Chatbot Ultra Fest (Groq)",
   "nodes": [
     {
-      "parameters": {},
-      "id": "e674a9eb-db57-4b77-802c-47ea0c159ec3",
+      "parameters": {
+        "public": true,
+        "initialMessages": "Hey bienvenido! 👋\nMi nombre es Nova, en qué puedo ayudarte?",
+        "options": {}
+      },
+      "id": "76e4a550-1228-434e-b6e9-7f3cbacae012",
       "name": "On chat message received",
       "type": "@n8n/n8n-nodes-langchain.chatTrigger",
       "typeVersion": 1,
-      "position": [0, 0]
+      "position": [
+        176,
+        -352
+      ],
+      "webhookId": "ba46a3ef-cce2-4ee1-8ea6-1a788bc21469"
     },
     {
       "parameters": {
+        "text": "=={{ $json.chatInput }}",
         "options": {
-          "systemMessage": "Eres el asistente virtual oficial del Ultra Fest Santa Cruz (fechas: 15 y 16 de Noviembre de 2026). El evento es en Ventura Arena. Eres muy amable, entusiasta y respondes siempre en español. Informas sobre los DJs invitados (Martin Garrix, Tiësto, David Guetta, Bizarrap) y guías al usuario para la venta de entradas. Sé breve y conciso en tus respuestas."
+          "systemMessage": "Eres el asistente virtual oficial del NOVA CRUZ (fechas: 15 y 16 de Noviembre de 2026). El evento es en Ventura Arena. Eres muy amable, entusiasta y respondes siempre en español. Informas sobre los DJs invitados (Martin Garrix, Tiësto, David Guetta, Bizarrap) y guías al usuario para la venta de entradas. Sé breve y conciso en tus respuestas."
         }
       },
-      "id": "422e1ab5-df2b-4cd3-a3d2-d3b25f9b4c02",
+      "id": "e7c35df9-36c5-4ee7-8072-53f5170341b8",
       "name": "AI Agent",
       "type": "@n8n/n8n-nodes-langchain.agent",
       "typeVersion": 1,
-      "position": [220, 0]
+      "position": [
+        400,
+        -352
+      ]
     },
     {
       "parameters": {
-        "model": "llama3-8b-8192"
+        "model": "groq/compound",
+        "options": {}
       },
-      "id": "90d1f7c0-264a-4d7a-8b06-44a7f05566f1",
+      "id": "a646bb40-8252-4e96-8f06-819d7aa39e7c",
       "name": "Groq Chat Model",
       "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
       "typeVersion": 1,
-      "position": [220, 240]
+      "position": [
+        400,
+        -112
+      ],
+      "credentials": {
+        "groqApi": {
+          "id": "nbFHsfqvGVJzlkkY",
+          "name": "Groq account"
+        }
+      }
     },
     {
       "parameters": {},
-      "id": "9e5c4a5c-7d72-4d08-8e6f-7e8c37d0c3ab",
+      "id": "2906b11d-cbd2-4c98-b743-76030cee3f2c",
       "name": "Window Buffer Memory",
       "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
       "typeVersion": 1,
-      "position": [360, 240]
+      "position": [
+        544,
+        -112
+      ]
     }
   ],
+  "pinData": {},
   "connections": {
     "On chat message received": {
       "main": [
@@ -75,6 +101,16 @@
       ]
     }
   },
-  "settings": {},
-  "pinData": {}
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "8922ae12-cb72-40ca-b0df-ea9db5d2e386",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "70c7c0efcc6bd88c76b317578196d3b71b0669d7c1fde94344673d61ba31dc2a"
+  },
+  "id": "jsnI55OFhdrTUl5l",
+  "tags": []
 }

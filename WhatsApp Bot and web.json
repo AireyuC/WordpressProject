@@ -1,0 +1,272 @@
+{
+  "name": "WhatsApp Bot (Limpio)",
+  "nodes": [
+    {
+      "parameters": {
+        "public": true,
+        "initialMessages": "Hey bienvenido! 👋\nMi nombre es Nova, en qué puedo ayudarte?",
+        "options": {}
+      },
+      "id": "76e4a550-1228-434e-b6e9-7f3cbacae012",
+      "name": "On chat message received",
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1,
+      "position": [176, -352]
+    },
+    {
+      "parameters": {
+        "text": "={{ $json.chatInput }}",
+        "options": {
+          "systemMessage": "Eres el asistente virtual oficial del NOVA CRUZ (fechas: 15 y 16 de Noviembre de 2026). El evento es en Ventura Arena. Eres muy amable, entusiasta y respondes siempre en español. Informas sobre los DJs invitados. Sé breve y conciso en tus respuestas."
+        }
+      },
+      "id": "e7c35df9-36c5-4ee7-8072-53f5170341b8",
+      "name": "AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1,
+      "position": [400, -352]
+    },
+    {
+      "parameters": {
+        "model": "groq/compound",
+        "options": {}
+      },
+      "id": "a646bb40-8252-4e96-8f06-819d7aa39e7c",
+      "name": "Groq Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [400, -112],
+      "credentials": {
+        "groqApi": {
+          "id": "nbFHsfqvGVJzlkkY",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "id": "2906b11d-cbd2-4c98-b743-76030cee3f2c",
+      "name": "Window Buffer Memory",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1,
+      "position": [544, -112]
+    },
+    {
+      "parameters": {
+        "path": "whatsapp",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "dd202d90-acb7-4df3-9481-eea0b809ac1d",
+      "name": "Meta Verification (GET)",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [-512, -768]
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "={{ $json.query['hub.challenge'] }}",
+        "options": {}
+      },
+      "id": "e6ba24e8-e039-4a62-a09f-045a12bd590c",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [-320, -768]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "whatsapp",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "5e0066d6-f372-4d45-9bd7-0a59fc2f3574",
+      "name": "Receive WhatsApp (POST)",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [0, -736]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.body.entry[0].changes[0].value.messages[0].type }}",
+              "value2": "text"
+            }
+          ]
+        }
+      },
+      "id": "5c84bfcf-97c3-4edb-ba09-461c10be1a8a",
+      "name": "IF Message?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [208, -736]
+    },
+    {
+      "parameters": {
+        "text": "={{ $json.body.entry[0].changes[0].value.messages[0].text.body }}",
+        "options": {
+          "systemMessage": "Eres el asistente virtual oficial del NOVA CRUZ (fechas: 15 y 16 de Noviembre de 2026). El evento es en Ventura Arena. Eres muy amable, entusiasta y respondes siempre en español. Informas sobre los DJs invitados. Sé breve."
+        }
+      },
+      "id": "319f8c2a-2d08-468f-b67e-d47484b53001",
+      "name": "AI Agent WhatsApp",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1,
+      "position": [464, -752]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://graph.facebook.com/v19.0/1127747783746878/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer EAAiqbruKKUIBRd0G2lANak2dRgv59ZCDtmIf55x4oofznUt4zPNA6atAhHu5OifczF4OJhYZAOVvmz5gHwEPMtagSaZAsQvZCRZBCsyCEvjAylOI9aYhZAEXTF3ZBXFLIQDMLRWZBGH9FZAZALOZClI1kBPQIEkccEJoIdIAmVZCjjWkZBdbkF6v415L0gpFAZA5Pas1SAXkDgNHdfjvc9DEEoZCZBTZBWwspDR1VNU24vZCHALjvDqxB5izfTnAV7U79ZBGycgkOHQnY40RWwAawV2bffhEBZCd"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { \"messaging_product\": \"whatsapp\", \"to\": $('Receive WhatsApp (POST)').first().json.body.entry[0].changes[0].value.messages[0].from, \"type\": \"text\", \"text\": { \"body\": $json.output } } }}",
+        "options": {}
+      },
+      "id": "9c0ff1f7-401c-4306-ac9a-a5f7879d4f44",
+      "name": "Send WhatsApp (HTTP API)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [816, -752]
+    },
+    {
+      "parameters": {
+        "model": "groq/compound",
+        "options": {}
+      },
+      "id": "7532e29c-39bd-4d5a-8948-faa43d2f075a",
+      "name": "Groq Chat Model WA",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [464, -544],
+      "credentials": {
+        "groqApi": {
+          "id": "nbFHsfqvGVJzlkkY",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "id": "9d045d1f-3e91-4111-a99a-975941155f04",
+      "name": "Window Buffer Memory WA",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1,
+      "position": [608, -544]
+    }
+  ],
+  "connections": {
+    "On chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Window Buffer Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Meta Verification (GET)": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Receive WhatsApp (POST)": {
+      "main": [
+        [
+          {
+            "node": "IF Message?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF Message?": {
+      "main": [
+        [
+          {
+            "node": "AI Agent WhatsApp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model WA": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent WhatsApp",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Window Buffer Memory WA": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent WhatsApp",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent WhatsApp": {
+      "main": [
+        [
+          {
+            "node": "Send WhatsApp (HTTP API)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

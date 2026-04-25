@@ -1,0 +1,183 @@
+{
+  "name": "WhatsApp Bot (Adicional)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "GET",
+        "path": "whatsapp",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-wa-get",
+      "name": "Meta Verification (GET)",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1.1,
+      "position": [0, -200]
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "={{ $json.query['hub.challenge'] }}",
+        "options": {}
+      },
+      "id": "respond-wa",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [200, -200]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "whatsapp",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "webhook-wa-post",
+      "name": "Receive WhatsApp (POST)",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1.1,
+      "position": [0, 0]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.body.entry[0].changes[0].value.messages[0].type }}",
+              "value2": "text"
+            }
+          ]
+        }
+      },
+      "id": "if-node",
+      "name": "IF Message?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [200, 0]
+    },
+    {
+      "parameters": {
+        "text": "={{ $json.body.entry[0].changes[0].value.messages[0].text.body }}",
+        "options": {
+          "systemMessage": "Eres el asistente virtual oficial del NOVA CRUZ (fechas: 15 y 16 de Noviembre de 2026). El evento es en Ventura Arena. Eres muy amable, entusiasta y respondes siempre en español. Informas sobre los DJs invitados. Sé breve."
+        }
+      },
+      "id": "ai-agent-wa",
+      "name": "AI Agent WhatsApp",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1,
+      "position": [450, -20]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://graph.facebook.com/v19.0/TU_PHONE_NUMBER_ID/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer TU_TOKEN_DE_META_AQUI"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { \"messaging_product\": \"whatsapp\", \"to\": $('Receive WhatsApp (POST)').item.json.body.entry[0].changes[0].value.messages[0].from, \"type\": \"text\", \"text\": { \"body\": $json.output } } }}",
+        "options": {}
+      },
+      "id": "whatsapp-send",
+      "name": "Send WhatsApp (HTTP API)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [700, -20]
+    },
+    {
+      "parameters": {
+        "model": "groq/compound"
+      },
+      "id": "groq-wa",
+      "name": "Groq Chat Model WA",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [450, 180]
+    },
+    {
+      "parameters": {},
+      "id": "memory-wa",
+      "name": "Window Buffer Memory WA",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1,
+      "position": [600, 180]
+    }
+  ],
+  "connections": {
+    "Meta Verification (GET)": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Receive WhatsApp (POST)": {
+      "main": [
+        [
+          {
+            "node": "IF Message?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF Message?": {
+      "main": [
+        [
+          {
+            "node": "AI Agent WhatsApp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent WhatsApp": {
+      "main": [
+        [
+          {
+            "node": "Send WhatsApp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model WA": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent WhatsApp",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Window Buffer Memory WA": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent WhatsApp",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}
